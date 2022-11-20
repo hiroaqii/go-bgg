@@ -9,7 +9,7 @@ import (
 	"strconv"
 )
 
-type ThingIntermediate struct {
+type thingIntermediate struct {
 	XMLName    xml.Name `xml:"items"`
 	Text       string   `xml:",chardata"`
 	Termsofuse string   `xml:"termsofuse,attr"`
@@ -38,22 +38,7 @@ type ThingIntermediate struct {
 			Text  string `xml:",chardata"`
 			Value string `xml:"value,attr"`
 		} `xml:"maxplayers"`
-		Poll []struct {
-			Text       string `xml:",chardata"`
-			Name       string `xml:"name,attr"`
-			Title      string `xml:"title,attr"`
-			Totalvotes string `xml:"totalvotes,attr"`
-			Results    []struct {
-				Text       string `xml:",chardata"`
-				Numplayers string `xml:"numplayers,attr"`
-				Result     []struct {
-					Text     string `xml:",chardata"`
-					Value    string `xml:"value,attr"`
-					Numvotes string `xml:"numvotes,attr"`
-					Level    string `xml:"level,attr"`
-				} `xml:"result"`
-			} `xml:"results"`
-		} `xml:"poll"`
+		Poll        []ThingPoolIntermediate `xml:"poll"`
 		Playingtime struct {
 			Text  string `xml:",chardata"`
 			Value string `xml:"value,attr"`
@@ -70,13 +55,31 @@ type ThingIntermediate struct {
 			Text  string `xml:",chardata"`
 			Value string `xml:"value,attr"`
 		} `xml:"minage"`
-		Link []struct {
-			Text  string `xml:",chardata"`
-			Type  string `xml:"type,attr"`
-			ID    string `xml:"id,attr"`
-			Value string `xml:"value,attr"`
-		} `xml:"link"`
+		Link []ThingLinkIntermediate `xml:"link"`
 	} `xml:"item"`
+}
+
+type ThingPoolIntermediate struct {
+	Text       string `xml:",chardata"`
+	Name       string `xml:"name,attr"`
+	Title      string `xml:"title,attr"`
+	Totalvotes string `xml:"totalvotes,attr"`
+	Results    []struct {
+		Text       string `xml:",chardata"`
+		Numplayers string `xml:"numplayers,attr"`
+		Result     []struct {
+			Text     string `xml:",chardata"`
+			Value    string `xml:"value,attr"`
+			Numvotes string `xml:"numvotes,attr"`
+			Level    string `xml:"level,attr"`
+		} `xml:"result"`
+	} `xml:"results"`
+}
+type ThingLinkIntermediate struct {
+	Text  string `xml:",chardata"`
+	Type  string `xml:"type,attr"`
+	ID    string `xml:"id,attr"`
+	Value string `xml:"value,attr"`
 }
 
 type ThingItems struct {
@@ -124,6 +127,45 @@ type ThingLink struct {
 	Value string `json:"value,omitempty"`
 }
 
+func newThingPool(pool ThingPoolIntermediate) ThingPool {
+	var poolResults = []ThingPoolResults{}
+	for _, results := range pool.Results {
+
+		var resultsResult = []ThingPoolResultsResult{}
+		for _, r := range results.Result {
+			level, _ := strconv.Atoi(r.Level)
+			numvotes, _ := strconv.Atoi(r.Numvotes)
+			resultsResult = append(resultsResult, ThingPoolResultsResult{
+				Level:    level,
+				Value:    r.Value,
+				Numvotes: numvotes,
+			})
+		}
+
+		poolResults = append(poolResults, ThingPoolResults{
+			Numplayers: results.Numplayers,
+			Result:     resultsResult,
+		})
+	}
+
+	totalvotes, _ := strconv.Atoi(pool.Totalvotes)
+	return ThingPool{
+		Name:       pool.Name,
+		Title:      pool.Title,
+		Totalvotes: totalvotes,
+		Results:    poolResults,
+	}
+}
+
+func newThingLink(t ThingLinkIntermediate) ThingLink {
+	id, _ := strconv.Atoi(t.ID)
+	return ThingLink{
+		ID:    id,
+		Type:  t.Type,
+		Value: t.Value,
+	}
+}
+
 func Thing() (ThingItems, error) {
 	resp, err := http.Get("https://api.geekdo.com/xmlapi2/thing?id=10000,2")
 	if err != nil {
@@ -135,7 +177,7 @@ func Thing() (ThingItems, error) {
 		log.Fatal(err)
 	}
 
-	var itemInter ThingIntermediate
+	var itemInter thingIntermediate
 	err = xml.Unmarshal(body, &itemInter)
 	if err != nil {
 		fmt.Printf("error: %v", err)
@@ -159,53 +201,22 @@ func Thing() (ThingItems, error) {
 			}
 		}
 
-		var polls = []ThingPool{}
+		polls := []ThingPool{}
 		for _, pool := range item.Poll {
-
-			var poolResults = []ThingPoolResults{}
-			for _, results := range pool.Results {
-
-				var resultsResult = []ThingPoolResultsResult{}
-				for _, r := range results.Result {
-					level, _ := strconv.Atoi(r.Level)
-					numvotes, _ := strconv.Atoi(r.Numvotes)
-					resultsResult = append(resultsResult, ThingPoolResultsResult{
-						Level:    level,
-						Value:    r.Value,
-						Numvotes: numvotes,
-					})
-				}
-
-				poolResults = append(poolResults, ThingPoolResults{
-					Numplayers: results.Numplayers,
-					Result:     resultsResult,
-				})
-			}
-
-			totalvotes, _ := strconv.Atoi(pool.Totalvotes)
-			polls = append(polls, ThingPool{
-				Name:       pool.Name,
-				Title:      pool.Title,
-				Totalvotes: totalvotes,
-				Results:    poolResults,
-			})
+			polls = append(polls, newThingPool(pool))
 		}
 
-		var links = []ThingLink{}
+		links := []ThingLink{}
 		for _, link := range item.Link {
-			id, _ := strconv.Atoi(link.ID)
-			links = append(links, ThingLink{
-				ID:    id,
-				Type:  link.Type,
-				Value: link.Value,
-			})
+			links = append(links, newThingLink(link))
 		}
+
 		thingItems = append(thingItems, ThingItem{
-			ID:   id,
-			Name: name,
-			//Thumbnail:     item.Thumbnail,
-			//Image:         item.Image,
-			//Description:   item.Description,
+			ID:            id,
+			Name:          name,
+			Thumbnail:     item.Thumbnail,
+			Image:         item.Image,
+			Description:   item.Description,
 			Yearpublished: yearpublished,
 			Minplayers:    minplayers,
 			Maxplayers:    maxplayers,
@@ -214,7 +225,7 @@ func Thing() (ThingItems, error) {
 			Minage:        minage,
 			Playingtime:   playingtime,
 			Polls:         polls,
-			//Links:         links,
+			Links:         links,
 		})
 	}
 

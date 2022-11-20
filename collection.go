@@ -9,74 +9,76 @@ import (
 	"strconv"
 )
 
+type CollectionItemsIntermediate struct {
+	XMLName    xml.Name                     `xml:"items"`
+	Text       string                       `xml:",chardata"`
+	Totalitems string                       `xml:"totalitems,attr"`
+	Termsofuse string                       `xml:"termsofuse,attr"`
+	Pubdate    string                       `xml:"pubdate,attr"`
+	Item       []CollectionItemIntermediate `xml:"item"`
+}
+
 type CollectionItemIntermediate struct {
-	XMLName    xml.Name `xml:"items"`
-	Text       string   `xml:",chardata"`
-	Totalitems string   `xml:"totalitems,attr"`
-	Termsofuse string   `xml:"termsofuse,attr"`
-	Pubdate    string   `xml:"pubdate,attr"`
-	Item       []struct {
-		Text       string `xml:",chardata"`
-		Objecttype string `xml:"objecttype,attr"`
-		Objectid   string `xml:"objectid,attr"`
-		Subtype    string `xml:"subtype,attr"`
-		Collid     string `xml:"collid,attr"`
-		Name       struct {
-			Text      string `xml:",chardata" json:"text"`
-			Sortindex string `xml:"sortindex,attr"`
-		} `xml:"name"`
-		Yearpublished string `xml:"yearpublished"`
-		Image         string `xml:"image"`
-		Thumbnail     string `xml:"thumbnail"`
-		Stats         struct {
-			Text        string `xml:",chardata"`
-			Minplayers  string `xml:"minplayers,attr"`
-			Maxplayers  string `xml:"maxplayers,attr"`
-			Minplaytime string `xml:"minplaytime,attr"`
-			Maxplaytime string `xml:"maxplaytime,attr"`
-			Playingtime string `xml:"playingtime,attr"`
-			Numowned    string `xml:"numowned,attr"`
-			Rating      struct {
-				Text       string `xml:",chardata"`
-				Value      string `xml:"value,attr"`
-				Usersrated struct {
-					Text  string `xml:",chardata"`
-					Value string `xml:"value,attr"`
-				} `xml:"usersrated"`
-				Average struct {
-					Text  string `xml:",chardata"`
-					Value string `xml:"value,attr"`
-				} `xml:"average"`
-				Bayesaverage struct {
-					Text  string `xml:",chardata"`
-					Value string `xml:"value,attr"`
-				} `xml:"bayesaverage"`
-				Stddev struct {
-					Text  string `xml:",chardata"`
-					Value string `xml:"value,attr"`
-				} `xml:"stddev"`
-				Median struct {
-					Text  string `xml:",chardata"`
-					Value string `xml:"value,attr"`
-				} `xml:"median"`
-			} `xml:"rating"`
-		} `xml:"stats"`
-		Status struct {
-			Text             string `xml:",chardata"`
-			Own              string `xml:"own,attr"`
-			Prevowned        string `xml:"prevowned,attr"`
-			Fortrade         string `xml:"fortrade,attr"`
-			Want             string `xml:"want,attr"`
-			Wanttoplay       string `xml:"wanttoplay,attr"`
-			Wanttobuy        string `xml:"wanttobuy,attr"`
-			Wishlist         string `xml:"wishlist,attr"`
-			Preordered       string `xml:"preordered,attr"`
-			Lastmodified     string `xml:"lastmodified,attr"`
-			Wishlistpriority string `xml:"wishlistpriority,attr"`
-		} `xml:"status"`
-		Numplays string `xml:"numplays"`
-		Comment  string `xml:"comment"`
-	} `xml:"item"`
+	Text       string `xml:",chardata"`
+	Objecttype string `xml:"objecttype,attr"`
+	Objectid   string `xml:"objectid,attr"`
+	Subtype    string `xml:"subtype,attr"`
+	Collid     string `xml:"collid,attr"`
+	Name       struct {
+		Text      string `xml:",chardata" json:"text"`
+		Sortindex string `xml:"sortindex,attr"`
+	} `xml:"name"`
+	Yearpublished string `xml:"yearpublished"`
+	Image         string `xml:"image"`
+	Thumbnail     string `xml:"thumbnail"`
+	Stats         struct {
+		Text        string `xml:",chardata"`
+		Minplayers  string `xml:"minplayers,attr"`
+		Maxplayers  string `xml:"maxplayers,attr"`
+		Minplaytime string `xml:"minplaytime,attr"`
+		Maxplaytime string `xml:"maxplaytime,attr"`
+		Playingtime string `xml:"playingtime,attr"`
+		Numowned    string `xml:"numowned,attr"`
+		Rating      struct {
+			Text       string `xml:",chardata"`
+			Value      string `xml:"value,attr"`
+			Usersrated struct {
+				Text  string `xml:",chardata"`
+				Value string `xml:"value,attr"`
+			} `xml:"usersrated"`
+			Average struct {
+				Text  string `xml:",chardata"`
+				Value string `xml:"value,attr"`
+			} `xml:"average"`
+			Bayesaverage struct {
+				Text  string `xml:",chardata"`
+				Value string `xml:"value,attr"`
+			} `xml:"bayesaverage"`
+			Stddev struct {
+				Text  string `xml:",chardata"`
+				Value string `xml:"value,attr"`
+			} `xml:"stddev"`
+			Median struct {
+				Text  string `xml:",chardata"`
+				Value string `xml:"value,attr"`
+			} `xml:"median"`
+		} `xml:"rating"`
+	} `xml:"stats"`
+	Status struct {
+		Text             string `xml:",chardata"`
+		Own              string `xml:"own,attr"`
+		Prevowned        string `xml:"prevowned,attr"`
+		Fortrade         string `xml:"fortrade,attr"`
+		Want             string `xml:"want,attr"`
+		Wanttoplay       string `xml:"wanttoplay,attr"`
+		Wanttobuy        string `xml:"wanttobuy,attr"`
+		Wishlist         string `xml:"wishlist,attr"`
+		Preordered       string `xml:"preordered,attr"`
+		Lastmodified     string `xml:"lastmodified,attr"`
+		Wishlistpriority string `xml:"wishlistpriority,attr"`
+	} `xml:"status"`
+	Numplays string `xml:"numplays"`
+	Comment  string `xml:"comment"`
 }
 
 type CollectionItems struct {
@@ -128,6 +130,67 @@ type Status struct {
 	Lastmodified     string `json:"lastmodified"`
 }
 
+func newCollectionItem(item CollectionItemIntermediate) CollectionItem {
+	yearpublished, _ := strconv.Atoi(item.Yearpublished)
+
+	usersrated, _ := strconv.Atoi(item.Stats.Rating.Usersrated.Value)
+	var rating = Rating{
+		Usersrated:   usersrated,
+		Average:      item.Stats.Rating.Average.Value,
+		Bayesaverage: item.Stats.Rating.Bayesaverage.Value,
+		Stddev:       item.Stats.Rating.Stddev.Value,
+		Median:       item.Stats.Rating.Median.Value,
+	}
+
+	minplayers, _ := strconv.Atoi(item.Stats.Minplayers)
+	maxplayers, _ := strconv.Atoi(item.Stats.Maxplayers)
+	minplaytime, _ := strconv.Atoi(item.Stats.Minplaytime)
+	maxplaytime, _ := strconv.Atoi(item.Stats.Maxplaytime)
+	playingtime, _ := strconv.Atoi(item.Stats.Playingtime)
+	numowned, _ := strconv.Atoi(item.Stats.Numowned)
+	var stats = Stats{
+		Rating:      rating,
+		Minplayers:  minplayers,
+		Maxplayers:  maxplayers,
+		Minplaytime: minplaytime,
+		Maxplaytime: maxplaytime,
+		Playingtime: playingtime,
+		Numowned:    numowned,
+	}
+
+	own, _ := strconv.Atoi(item.Status.Own)
+	prevowned, _ := strconv.Atoi(item.Status.Prevowned)
+	fortrade, _ := strconv.Atoi(item.Status.Fortrade)
+	want, _ := strconv.Atoi(item.Status.Want)
+	wanttoplay, _ := strconv.Atoi(item.Status.Wanttoplay)
+	wanttobuy, _ := strconv.Atoi(item.Status.Wanttobuy)
+	wishlist, _ := strconv.Atoi(item.Status.Wishlist)
+	preordered, _ := strconv.Atoi(item.Status.Preordered)
+	wishlistpriority, _ := strconv.Atoi(item.Status.Wishlistpriority)
+
+	var status = Status{
+		Own:              own,
+		Prevowned:        prevowned,
+		Fortrade:         fortrade,
+		Want:             want,
+		Wanttoplay:       wanttoplay,
+		Wanttobuy:        wanttobuy,
+		Wishlist:         wishlist,
+		Preordered:       preordered,
+		Wishlistpriority: wishlistpriority,
+		Lastmodified:     item.Status.Lastmodified,
+	}
+
+	return CollectionItem{
+		Name:          item.Name.Text,
+		Yearpublished: yearpublished,
+		Comment:       item.Comment,
+		Thumbnail:     item.Thumbnail,
+		Stats:         stats,
+		Status:        status,
+	}
+}
+
 func Collection() (CollectionItems, error) {
 	resp, err := http.Get("https://api.geekdo.com/xmlapi/collection/hiroaqii")
 	if err != nil {
@@ -139,7 +202,7 @@ func Collection() (CollectionItems, error) {
 		log.Fatal(err)
 	}
 
-	var itemInter CollectionItemIntermediate
+	var itemInter CollectionItemsIntermediate
 	err = xml.Unmarshal(body, &itemInter)
 	if err != nil {
 		fmt.Printf("error: %v", err)
@@ -147,63 +210,7 @@ func Collection() (CollectionItems, error) {
 
 	var items = []CollectionItem{}
 	for _, item := range itemInter.Item {
-		yearpublished, _ := strconv.Atoi(item.Yearpublished)
-
-		usersrated, _ := strconv.Atoi(item.Stats.Rating.Usersrated.Value)
-		var rating = Rating{
-			Usersrated:   usersrated,
-			Average:      item.Stats.Rating.Average.Value,
-			Bayesaverage: item.Stats.Rating.Bayesaverage.Value,
-			Stddev:       item.Stats.Rating.Stddev.Value,
-			Median:       item.Stats.Rating.Median.Value,
-		}
-
-		minplayers, _ := strconv.Atoi(item.Stats.Minplayers)
-		maxplayers, _ := strconv.Atoi(item.Stats.Maxplayers)
-		minplaytime, _ := strconv.Atoi(item.Stats.Minplaytime)
-		maxplaytime, _ := strconv.Atoi(item.Stats.Maxplaytime)
-		playingtime, _ := strconv.Atoi(item.Stats.Playingtime)
-		numowned, _ := strconv.Atoi(item.Stats.Numowned)
-		var stats = Stats{
-			Rating:      rating,
-			Minplayers:  minplayers,
-			Maxplayers:  maxplayers,
-			Minplaytime: minplaytime,
-			Maxplaytime: maxplaytime,
-			Playingtime: playingtime,
-			Numowned:    numowned,
-		}
-
-		own, _ := strconv.Atoi(item.Status.Own)
-		prevowned, _ := strconv.Atoi(item.Status.Prevowned)
-		fortrade, _ := strconv.Atoi(item.Status.Fortrade)
-		want, _ := strconv.Atoi(item.Status.Want)
-		wanttoplay, _ := strconv.Atoi(item.Status.Wanttoplay)
-		wanttobuy, _ := strconv.Atoi(item.Status.Wanttobuy)
-		wishlist, _ := strconv.Atoi(item.Status.Wishlist)
-		preordered, _ := strconv.Atoi(item.Status.Preordered)
-		wishlistpriority, _ := strconv.Atoi(item.Status.Wishlistpriority)
-
-		var status = Status{
-			Own:              own,
-			Prevowned:        prevowned,
-			Fortrade:         fortrade,
-			Want:             want,
-			Wanttoplay:       wanttoplay,
-			Wanttobuy:        wanttobuy,
-			Wishlist:         wishlist,
-			Preordered:       preordered,
-			Wishlistpriority: wishlistpriority,
-			Lastmodified:     item.Status.Lastmodified,
-		}
-		items = append(items, CollectionItem{
-			Name:          item.Name.Text,
-			Yearpublished: yearpublished,
-			Comment:       item.Comment,
-			//Thumbnail:     item.Thumbnail,
-			Stats:  stats,
-			Status: status,
-		})
+		items = append(items, newCollectionItem(item))
 	}
 
 	return CollectionItems{Items: items}, nil

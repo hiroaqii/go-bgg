@@ -10,28 +10,29 @@ import (
 )
 
 type hotItemsIntermediate struct {
-	XMLName    xml.Name `xml:"items"`
-	Text       string   `xml:",chardata"`
-	Termsofuse string   `xml:"termsofuse,attr"`
-	Item       []struct {
-		Text      string `xml:",chardata"`
-		ID        string `xml:"id,attr"`
-		Rank      string `xml:"rank,attr"`
-		Thumbnail struct {
-			Text  string `xml:",chardata"`
-			Value string `xml:"value,attr"`
-		} `xml:"thumbnail"`
-		Name struct {
-			Text  string `xml:",chardata"`
-			Value string `xml:"value,attr"`
-		} `xml:"name"`
-		Yearpublished struct {
-			Text  string `xml:",chardata"`
-			Value string `xml:"value,attr"`
-		} `xml:"yearpublished"`
-	} `xml:"item"`
+	XMLName    xml.Name              `xml:"items"`
+	Text       string                `xml:",chardata"`
+	Termsofuse string                `xml:"termsofuse,attr"`
+	Item       []hotItemIntermediate `xml:"item"`
 }
 
+type hotItemIntermediate struct {
+	Text      string `xml:",chardata"`
+	ID        string `xml:"id,attr"`
+	Rank      string `xml:"rank,attr"`
+	Thumbnail struct {
+		Text  string `xml:",chardata"`
+		Value string `xml:"value,attr"`
+	} `xml:"thumbnail"`
+	Name struct {
+		Text  string `xml:",chardata"`
+		Value string `xml:"value,attr"`
+	} `xml:"name"`
+	Yearpublished struct {
+		Text  string `xml:",chardata"`
+		Value string `xml:"value,attr"`
+	} `xml:"yearpublished"`
+}
 type HotItems struct {
 	Items []HotItem `json:"items"`
 }
@@ -42,6 +43,21 @@ type HotItem struct {
 	Name          string `json:"name"`
 	Yearpublished int    `json:"yearpublished,omitempty"`
 	Thumbnail     string `json:"thumbnail"`
+}
+
+func newHotItem(xml hotItemIntermediate) HotItem {
+
+	id, _ := strconv.Atoi(xml.ID)
+	rank, _ := strconv.Atoi(xml.Rank)
+	yearpublished, _ := strconv.Atoi(xml.Yearpublished.Value)
+
+	return HotItem{
+		ID:            id,
+		Rank:          rank,
+		Thumbnail:     xml.Thumbnail.Value,
+		Name:          xml.Name.Value,
+		Yearpublished: yearpublished,
+	}
 }
 
 func Hot() (HotItems, error) {
@@ -63,17 +79,7 @@ func Hot() (HotItems, error) {
 
 	var hotItems = []HotItem{}
 	for _, item := range itemInter.Item {
-		id, _ := strconv.Atoi(item.ID)
-		rank, _ := strconv.Atoi(item.Rank)
-		yearpublished, _ := strconv.Atoi(item.Yearpublished.Value)
-
-		hotItems = append(hotItems, HotItem{
-			ID:            id,
-			Rank:          rank,
-			Thumbnail:     item.Thumbnail.Value,
-			Name:          item.Name.Value,
-			Yearpublished: yearpublished,
-		})
+		hotItems = append(hotItems, newHotItem(item))
 	}
 
 	return HotItems{Items: hotItems}, nil
