@@ -10,56 +10,57 @@ import (
 )
 
 type thingIntermediate struct {
-	XMLName    xml.Name `xml:"items"`
-	Text       string   `xml:",chardata"`
-	Termsofuse string   `xml:"termsofuse,attr"`
-	Item       []struct {
-		Text      string `xml:",chardata"`
-		Type      string `xml:"type,attr"`
-		ID        string `xml:"id,attr"`
-		Thumbnail string `xml:"thumbnail"`
-		Image     string `xml:"image"`
-		Name      []struct {
-			Text      string `xml:",chardata"`
-			Type      string `xml:"type,attr"`
-			Sortindex string `xml:"sortindex,attr"`
-			Value     string `xml:"value,attr"`
-		} `xml:"name"`
-		Description   string `xml:"description"`
-		Yearpublished struct {
-			Text  string `xml:",chardata"`
-			Value string `xml:"value,attr"`
-		} `xml:"yearpublished"`
-		Minplayers struct {
-			Text  string `xml:",chardata"`
-			Value string `xml:"value,attr"`
-		} `xml:"minplayers"`
-		Maxplayers struct {
-			Text  string `xml:",chardata"`
-			Value string `xml:"value,attr"`
-		} `xml:"maxplayers"`
-		Poll        []ThingPoolIntermediate `xml:"poll"`
-		Playingtime struct {
-			Text  string `xml:",chardata"`
-			Value string `xml:"value,attr"`
-		} `xml:"playingtime"`
-		Minplaytime struct {
-			Text  string `xml:",chardata"`
-			Value string `xml:"value,attr"`
-		} `xml:"minplaytime"`
-		Maxplaytime struct {
-			Text  string `xml:",chardata"`
-			Value string `xml:"value,attr"`
-		} `xml:"maxplaytime"`
-		Minage struct {
-			Text  string `xml:",chardata"`
-			Value string `xml:"value,attr"`
-		} `xml:"minage"`
-		Link []ThingLinkIntermediate `xml:"link"`
-	} `xml:"item"`
+	XMLName    xml.Name                `xml:"items"`
+	Text       string                  `xml:",chardata"`
+	Termsofuse string                  `xml:"termsofuse,attr"`
+	Item       []thingItemIntermediate `xml:"item"`
 }
 
-type ThingPoolIntermediate struct {
+type thingItemIntermediate struct {
+	Text      string `xml:",chardata"`
+	Type      string `xml:"type,attr"`
+	ID        string `xml:"id,attr"`
+	Thumbnail string `xml:"thumbnail"`
+	Image     string `xml:"image"`
+	Name      []struct {
+		Text      string `xml:",chardata"`
+		Type      string `xml:"type,attr"`
+		Sortindex string `xml:"sortindex,attr"`
+		Value     string `xml:"value,attr"`
+	} `xml:"name"`
+	Description   string `xml:"description"`
+	Yearpublished struct {
+		Text  string `xml:",chardata"`
+		Value string `xml:"value,attr"`
+	} `xml:"yearpublished"`
+	Minplayers struct {
+		Text  string `xml:",chardata"`
+		Value string `xml:"value,attr"`
+	} `xml:"minplayers"`
+	Maxplayers struct {
+		Text  string `xml:",chardata"`
+		Value string `xml:"value,attr"`
+	} `xml:"maxplayers"`
+	Playingtime struct {
+		Text  string `xml:",chardata"`
+		Value string `xml:"value,attr"`
+	} `xml:"playingtime"`
+	Minplaytime struct {
+		Text  string `xml:",chardata"`
+		Value string `xml:"value,attr"`
+	} `xml:"minplaytime"`
+	Maxplaytime struct {
+		Text  string `xml:",chardata"`
+		Value string `xml:"value,attr"`
+	} `xml:"maxplaytime"`
+	Minage struct {
+		Text  string `xml:",chardata"`
+		Value string `xml:"value,attr"`
+	} `xml:"minage"`
+	Poll []thingPoolIntermediate `xml:"poll"`
+	Link []thingLinkIntermediate `xml:"link"`
+}
+type thingPoolIntermediate struct {
 	Text       string `xml:",chardata"`
 	Name       string `xml:"name,attr"`
 	Title      string `xml:"title,attr"`
@@ -75,7 +76,7 @@ type ThingPoolIntermediate struct {
 		} `xml:"result"`
 	} `xml:"results"`
 }
-type ThingLinkIntermediate struct {
+type thingLinkIntermediate struct {
 	Text  string `xml:",chardata"`
 	Type  string `xml:"type,attr"`
 	ID    string `xml:"id,attr"`
@@ -127,7 +128,52 @@ type ThingLink struct {
 	Value string `json:"value,omitempty"`
 }
 
-func newThingPool(pool ThingPoolIntermediate) ThingPool {
+func newThingItem(item thingItemIntermediate) ThingItem {
+	id, _ := strconv.Atoi(item.ID)
+	yearpublished, _ := strconv.Atoi(item.Yearpublished.Value)
+	minplayers, _ := strconv.Atoi(item.Minplayers.Value)
+	maxplayers, _ := strconv.Atoi(item.Maxplayers.Value)
+	minplaytime, _ := strconv.Atoi(item.Minplaytime.Value)
+	maxplaytime, _ := strconv.Atoi(item.Maxplaytime.Value)
+	minage, _ := strconv.Atoi(item.Minage.Value)
+	playingtime, _ := strconv.Atoi(item.Playingtime.Value)
+
+	name := ""
+	for _, nm := range item.Name {
+		if nm.Type == "primary" {
+			name = nm.Value
+		}
+	}
+
+	polls := []ThingPool{}
+	for _, pool := range item.Poll {
+		polls = append(polls, newThingPool(pool))
+	}
+
+	links := []ThingLink{}
+	for _, link := range item.Link {
+		links = append(links, newThingLink(link))
+	}
+
+	return ThingItem{
+		ID:            id,
+		Name:          name,
+		Thumbnail:     item.Thumbnail,
+		Image:         item.Image,
+		Description:   item.Description,
+		Yearpublished: yearpublished,
+		Minplayers:    minplayers,
+		Maxplayers:    maxplayers,
+		Minplaytime:   minplaytime,
+		Maxplaytime:   maxplaytime,
+		Minage:        minage,
+		Playingtime:   playingtime,
+		Polls:         polls,
+		Links:         links,
+	}
+}
+
+func newThingPool(pool thingPoolIntermediate) ThingPool {
 	var poolResults = []ThingPoolResults{}
 	for _, results := range pool.Results {
 
@@ -157,7 +203,7 @@ func newThingPool(pool ThingPoolIntermediate) ThingPool {
 	}
 }
 
-func newThingLink(t ThingLinkIntermediate) ThingLink {
+func newThingLink(t thingLinkIntermediate) ThingLink {
 	id, _ := strconv.Atoi(t.ID)
 	return ThingLink{
 		ID:    id,
@@ -185,48 +231,7 @@ func Thing() (ThingItems, error) {
 
 	var thingItems = []ThingItem{}
 	for _, item := range itemInter.Item {
-		id, _ := strconv.Atoi(item.ID)
-		yearpublished, _ := strconv.Atoi(item.Yearpublished.Value)
-		minplayers, _ := strconv.Atoi(item.Minplayers.Value)
-		maxplayers, _ := strconv.Atoi(item.Maxplayers.Value)
-		minplaytime, _ := strconv.Atoi(item.Minplaytime.Value)
-		maxplaytime, _ := strconv.Atoi(item.Maxplaytime.Value)
-		minage, _ := strconv.Atoi(item.Minage.Value)
-		playingtime, _ := strconv.Atoi(item.Playingtime.Value)
-
-		name := ""
-		for _, nm := range item.Name {
-			if nm.Type == "primary" {
-				name = nm.Value
-			}
-		}
-
-		polls := []ThingPool{}
-		for _, pool := range item.Poll {
-			polls = append(polls, newThingPool(pool))
-		}
-
-		links := []ThingLink{}
-		for _, link := range item.Link {
-			links = append(links, newThingLink(link))
-		}
-
-		thingItems = append(thingItems, ThingItem{
-			ID:            id,
-			Name:          name,
-			Thumbnail:     item.Thumbnail,
-			Image:         item.Image,
-			Description:   item.Description,
-			Yearpublished: yearpublished,
-			Minplayers:    minplayers,
-			Maxplayers:    maxplayers,
-			Minplaytime:   minplaytime,
-			Maxplaytime:   maxplaytime,
-			Minage:        minage,
-			Playingtime:   playingtime,
-			Polls:         polls,
-			Links:         links,
-		})
+		thingItems = append(thingItems, newThingItem(item))
 	}
 
 	return ThingItems{Items: thingItems}, nil

@@ -9,16 +9,16 @@ import (
 	"strconv"
 )
 
-type CollectionItemsIntermediate struct {
+type collectionItemsIntermediate struct {
 	XMLName    xml.Name                     `xml:"items"`
 	Text       string                       `xml:",chardata"`
 	Totalitems string                       `xml:"totalitems,attr"`
 	Termsofuse string                       `xml:"termsofuse,attr"`
 	Pubdate    string                       `xml:"pubdate,attr"`
-	Item       []CollectionItemIntermediate `xml:"item"`
+	Item       []collectionItemIntermediate `xml:"item"`
 }
 
-type CollectionItemIntermediate struct {
+type collectionItemIntermediate struct {
 	Text       string `xml:",chardata"`
 	Objecttype string `xml:"objecttype,attr"`
 	Objectid   string `xml:"objectid,attr"`
@@ -28,57 +28,60 @@ type CollectionItemIntermediate struct {
 		Text      string `xml:",chardata" json:"text"`
 		Sortindex string `xml:"sortindex,attr"`
 	} `xml:"name"`
-	Yearpublished string `xml:"yearpublished"`
-	Image         string `xml:"image"`
-	Thumbnail     string `xml:"thumbnail"`
-	Stats         struct {
-		Text        string `xml:",chardata"`
-		Minplayers  string `xml:"minplayers,attr"`
-		Maxplayers  string `xml:"maxplayers,attr"`
-		Minplaytime string `xml:"minplaytime,attr"`
-		Maxplaytime string `xml:"maxplaytime,attr"`
-		Playingtime string `xml:"playingtime,attr"`
-		Numowned    string `xml:"numowned,attr"`
-		Rating      struct {
-			Text       string `xml:",chardata"`
-			Value      string `xml:"value,attr"`
-			Usersrated struct {
-				Text  string `xml:",chardata"`
-				Value string `xml:"value,attr"`
-			} `xml:"usersrated"`
-			Average struct {
-				Text  string `xml:",chardata"`
-				Value string `xml:"value,attr"`
-			} `xml:"average"`
-			Bayesaverage struct {
-				Text  string `xml:",chardata"`
-				Value string `xml:"value,attr"`
-			} `xml:"bayesaverage"`
-			Stddev struct {
-				Text  string `xml:",chardata"`
-				Value string `xml:"value,attr"`
-			} `xml:"stddev"`
-			Median struct {
-				Text  string `xml:",chardata"`
-				Value string `xml:"value,attr"`
-			} `xml:"median"`
-		} `xml:"rating"`
-	} `xml:"stats"`
-	Status struct {
-		Text             string `xml:",chardata"`
-		Own              string `xml:"own,attr"`
-		Prevowned        string `xml:"prevowned,attr"`
-		Fortrade         string `xml:"fortrade,attr"`
-		Want             string `xml:"want,attr"`
-		Wanttoplay       string `xml:"wanttoplay,attr"`
-		Wanttobuy        string `xml:"wanttobuy,attr"`
-		Wishlist         string `xml:"wishlist,attr"`
-		Preordered       string `xml:"preordered,attr"`
-		Lastmodified     string `xml:"lastmodified,attr"`
-		Wishlistpriority string `xml:"wishlistpriority,attr"`
-	} `xml:"status"`
-	Numplays string `xml:"numplays"`
-	Comment  string `xml:"comment"`
+	Yearpublished string                           `xml:"yearpublished"`
+	Image         string                           `xml:"image"`
+	Thumbnail     string                           `xml:"thumbnail"`
+	Stats         collectionItemStatsIntermediate  `xml:"stats"`
+	Status        collectionItemStatusIntermediate `xml:"status"`
+	Numplays      string                           `xml:"numplays"`
+	Comment       string                           `xml:"comment"`
+}
+
+type collectionItemStatsIntermediate struct {
+	Text        string `xml:",chardata"`
+	Minplayers  string `xml:"minplayers,attr"`
+	Maxplayers  string `xml:"maxplayers,attr"`
+	Minplaytime string `xml:"minplaytime,attr"`
+	Maxplaytime string `xml:"maxplaytime,attr"`
+	Playingtime string `xml:"playingtime,attr"`
+	Numowned    string `xml:"numowned,attr"`
+	Rating      struct {
+		Text       string `xml:",chardata"`
+		Value      string `xml:"value,attr"`
+		Usersrated struct {
+			Text  string `xml:",chardata"`
+			Value string `xml:"value,attr"`
+		} `xml:"usersrated"`
+		Average struct {
+			Text  string `xml:",chardata"`
+			Value string `xml:"value,attr"`
+		} `xml:"average"`
+		Bayesaverage struct {
+			Text  string `xml:",chardata"`
+			Value string `xml:"value,attr"`
+		} `xml:"bayesaverage"`
+		Stddev struct {
+			Text  string `xml:",chardata"`
+			Value string `xml:"value,attr"`
+		} `xml:"stddev"`
+		Median struct {
+			Text  string `xml:",chardata"`
+			Value string `xml:"value,attr"`
+		} `xml:"median"`
+	} `xml:"rating"`
+}
+type collectionItemStatusIntermediate struct {
+	Text             string `xml:",chardata"`
+	Own              string `xml:"own,attr"`
+	Prevowned        string `xml:"prevowned,attr"`
+	Fortrade         string `xml:"fortrade,attr"`
+	Want             string `xml:"want,attr"`
+	Wanttoplay       string `xml:"wanttoplay,attr"`
+	Wanttobuy        string `xml:"wanttobuy,attr"`
+	Wishlist         string `xml:"wishlist,attr"`
+	Preordered       string `xml:"preordered,attr"`
+	Lastmodified     string `xml:"lastmodified,attr"`
+	Wishlistpriority string `xml:"wishlistpriority,attr"`
 }
 
 type CollectionItems struct {
@@ -86,30 +89,30 @@ type CollectionItems struct {
 }
 
 type CollectionItem struct {
-	Name            string `json:"name,omitempty"`
-	Yearpublished   int    `json:"yearpublished,omitempty"`
-	Image           string `json:"image,omitempty"`
-	Thumbnail       string `json:"thumbnail,omitempty"`
-	Stats           Stats  `json:"stats,omitempty"`
-	Status          Status `json:"status,omitempty"`
-	Numplays        int    `json:"numplays,omitempty"`
-	Comment         string `json:"comment,omitempty"`
-	Conditiontext   string `json:"conditiontext,omitempty"`
-	Originalname    string `json:"originalname,omitempty"`
-	Wishlistcomment string `json:"wishlistcomment,omitempty"`
+	Name            string               `json:"name,omitempty"`
+	Yearpublished   int                  `json:"yearpublished,omitempty"`
+	Image           string               `json:"image,omitempty"`
+	Thumbnail       string               `json:"thumbnail,omitempty"`
+	Stats           CollectionItemStats  `json:"stats,omitempty"`
+	Status          CollectionItemStatus `json:"status,omitempty"`
+	Numplays        int                  `json:"numplays,omitempty"`
+	Comment         string               `json:"comment,omitempty"`
+	Conditiontext   string               `json:"conditiontext,omitempty"`
+	Originalname    string               `json:"originalname,omitempty"`
+	Wishlistcomment string               `json:"wishlistcomment,omitempty"`
 }
 
-type Stats struct {
-	Minplayers  int    `json:"minplayers,omitempty"`
-	Maxplayers  int    `json:"maxplayers,omitempty"`
-	Minplaytime int    `json:"minplaytime,omitempty"`
-	Maxplaytime int    `json:"maxplaytime,omitempty"`
-	Playingtime int    `json:"playingtime,omitempty"`
-	Numowned    int    `json:"numowned,omitempty"`
-	Rating      Rating `json:"rating,omitempty"`
+type CollectionItemStats struct {
+	Minplayers  int                  `json:"minplayers,omitempty"`
+	Maxplayers  int                  `json:"maxplayers,omitempty"`
+	Minplaytime int                  `json:"minplaytime,omitempty"`
+	Maxplaytime int                  `json:"maxplaytime,omitempty"`
+	Playingtime int                  `json:"playingtime,omitempty"`
+	Numowned    int                  `json:"numowned,omitempty"`
+	Rating      CollectionItemRating `json:"rating,omitempty"`
 }
 
-type Rating struct {
+type CollectionItemRating struct {
 	Usersrated   int    `json:"usersrated,omitempty"`
 	Average      string `json:"average,omitempty"`
 	Bayesaverage string `json:"bayesaverage,omitempty"`
@@ -117,7 +120,7 @@ type Rating struct {
 	Median       string `json:"median,omitempty"`
 }
 
-type Status struct {
+type CollectionItemStatus struct {
 	Own              int    `json:"own"`
 	Prevowned        int    `json:"prevowned"`
 	Fortrade         int    `json:"fortrade"`
@@ -130,25 +133,24 @@ type Status struct {
 	Lastmodified     string `json:"lastmodified"`
 }
 
-func newCollectionItem(item CollectionItemIntermediate) CollectionItem {
-	yearpublished, _ := strconv.Atoi(item.Yearpublished)
-
-	usersrated, _ := strconv.Atoi(item.Stats.Rating.Usersrated.Value)
-	var rating = Rating{
+func newCollectionItemStats(s collectionItemStatsIntermediate) CollectionItemStats {
+	usersrated, _ := strconv.Atoi(s.Rating.Usersrated.Value)
+	var rating = CollectionItemRating{
 		Usersrated:   usersrated,
-		Average:      item.Stats.Rating.Average.Value,
-		Bayesaverage: item.Stats.Rating.Bayesaverage.Value,
-		Stddev:       item.Stats.Rating.Stddev.Value,
-		Median:       item.Stats.Rating.Median.Value,
+		Average:      s.Rating.Average.Value,
+		Bayesaverage: s.Rating.Bayesaverage.Value,
+		Stddev:       s.Rating.Stddev.Value,
+		Median:       s.Rating.Median.Value,
 	}
 
-	minplayers, _ := strconv.Atoi(item.Stats.Minplayers)
-	maxplayers, _ := strconv.Atoi(item.Stats.Maxplayers)
-	minplaytime, _ := strconv.Atoi(item.Stats.Minplaytime)
-	maxplaytime, _ := strconv.Atoi(item.Stats.Maxplaytime)
-	playingtime, _ := strconv.Atoi(item.Stats.Playingtime)
-	numowned, _ := strconv.Atoi(item.Stats.Numowned)
-	var stats = Stats{
+	minplayers, _ := strconv.Atoi(s.Minplayers)
+	maxplayers, _ := strconv.Atoi(s.Maxplayers)
+	minplaytime, _ := strconv.Atoi(s.Minplaytime)
+	maxplaytime, _ := strconv.Atoi(s.Maxplaytime)
+	playingtime, _ := strconv.Atoi(s.Playingtime)
+	numowned, _ := strconv.Atoi(s.Numowned)
+
+	return CollectionItemStats{
 		Rating:      rating,
 		Minplayers:  minplayers,
 		Maxplayers:  maxplayers,
@@ -157,18 +159,20 @@ func newCollectionItem(item CollectionItemIntermediate) CollectionItem {
 		Playingtime: playingtime,
 		Numowned:    numowned,
 	}
+}
 
-	own, _ := strconv.Atoi(item.Status.Own)
-	prevowned, _ := strconv.Atoi(item.Status.Prevowned)
-	fortrade, _ := strconv.Atoi(item.Status.Fortrade)
-	want, _ := strconv.Atoi(item.Status.Want)
-	wanttoplay, _ := strconv.Atoi(item.Status.Wanttoplay)
-	wanttobuy, _ := strconv.Atoi(item.Status.Wanttobuy)
-	wishlist, _ := strconv.Atoi(item.Status.Wishlist)
-	preordered, _ := strconv.Atoi(item.Status.Preordered)
-	wishlistpriority, _ := strconv.Atoi(item.Status.Wishlistpriority)
+func newCollectionItemStatus(s collectionItemStatusIntermediate) CollectionItemStatus {
+	own, _ := strconv.Atoi(s.Own)
+	prevowned, _ := strconv.Atoi(s.Prevowned)
+	fortrade, _ := strconv.Atoi(s.Fortrade)
+	want, _ := strconv.Atoi(s.Want)
+	wanttoplay, _ := strconv.Atoi(s.Wanttoplay)
+	wanttobuy, _ := strconv.Atoi(s.Wanttobuy)
+	wishlist, _ := strconv.Atoi(s.Wishlist)
+	preordered, _ := strconv.Atoi(s.Preordered)
+	wishlistpriority, _ := strconv.Atoi(s.Wishlistpriority)
 
-	var status = Status{
+	return CollectionItemStatus{
 		Own:              own,
 		Prevowned:        prevowned,
 		Fortrade:         fortrade,
@@ -178,8 +182,14 @@ func newCollectionItem(item CollectionItemIntermediate) CollectionItem {
 		Wishlist:         wishlist,
 		Preordered:       preordered,
 		Wishlistpriority: wishlistpriority,
-		Lastmodified:     item.Status.Lastmodified,
+		Lastmodified:     s.Lastmodified,
 	}
+}
+
+func newCollectionItem(item collectionItemIntermediate) CollectionItem {
+	stats := newCollectionItemStats(item.Stats)
+	status := newCollectionItemStatus(item.Status)
+	yearpublished, _ := strconv.Atoi(item.Yearpublished)
 
 	return CollectionItem{
 		Name:          item.Name.Text,
@@ -202,7 +212,7 @@ func Collection() (CollectionItems, error) {
 		log.Fatal(err)
 	}
 
-	var itemInter CollectionItemsIntermediate
+	var itemInter collectionItemsIntermediate
 	err = xml.Unmarshal(body, &itemInter)
 	if err != nil {
 		fmt.Printf("error: %v", err)
