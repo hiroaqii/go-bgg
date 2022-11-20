@@ -1,33 +1,47 @@
 package bgggo
 
 import (
-	"encoding/json"
+	"encoding/xml"
 	"fmt"
 	"io"
 	"log"
 	"net/http"
-	"strings"
-
-	xj "github.com/basgys/goxml2json"
+	"strconv"
 )
 
+type hotItemsIntermediate struct {
+	XMLName    xml.Name `xml:"items"`
+	Text       string   `xml:",chardata"`
+	Termsofuse string   `xml:"termsofuse,attr"`
+	Item       []struct {
+		Text      string `xml:",chardata"`
+		ID        string `xml:"id,attr"`
+		Rank      string `xml:"rank,attr"`
+		Thumbnail struct {
+			Text  string `xml:",chardata"`
+			Value string `xml:"value,attr"`
+		} `xml:"thumbnail"`
+		Name struct {
+			Text  string `xml:",chardata"`
+			Value string `xml:"value,attr"`
+		} `xml:"name"`
+		Yearpublished struct {
+			Text  string `xml:",chardata"`
+			Value string `xml:"value,attr"`
+		} `xml:"yearpublished"`
+	} `xml:"item"`
+}
+
 type HotItems struct {
-	Items struct {
-		Termsofuse string `json:"-termsofuse"`
-		Item       []struct {
-			Rank      string `json:"-rank"`
-			Thumbnail struct {
-				Value string `json:"-value"`
-			} `json:"thumbnail"`
-			Name struct {
-				Value string `json:"-value"`
-			} `json:"name"`
-			Yearpublished struct {
-				Value string `json:"-value"`
-			} `json:"yearpublished"`
-			ID string `json:"-id"`
-		} `json:"item"`
-	} `json:"items"`
+	Items []HotItem `json:"items"`
+}
+
+type HotItem struct {
+	ID            int    `json:"id"`
+	Rank          int    `json:"rank"`
+	Name          string `json:"name"`
+	Yearpublished int    `json:"yearpublished,omitempty"`
+	Thumbnail     string `json:"thumbnail"`
 }
 
 func Hot() (HotItems, error) {
@@ -41,18 +55,26 @@ func Hot() (HotItems, error) {
 		log.Fatal(err)
 	}
 
-	sb := string(body)
-	xml := strings.NewReader(sb)
-	jsonStr, err := xj.Convert(xml)
+	var itemInter hotItemsIntermediate
+	err = xml.Unmarshal(body, &itemInter)
 	if err != nil {
-		panic("That's embarrassing...")
+		fmt.Printf("error: %v", err)
 	}
 
-	var hotItems HotItems
-	if err := json.Unmarshal([]byte(jsonStr.Bytes()), &hotItems); err != nil {
-		fmt.Println(err)
-		return HotItems{}, err
+	var hotItems = []HotItem{}
+	for _, item := range itemInter.Item {
+		id, _ := strconv.Atoi(item.ID)
+		rank, _ := strconv.Atoi(item.Rank)
+		yearpublished, _ := strconv.Atoi(item.Yearpublished.Value)
+
+		hotItems = append(hotItems, HotItem{
+			ID:            id,
+			Rank:          rank,
+			Thumbnail:     item.Thumbnail.Value,
+			Name:          item.Name.Value,
+			Yearpublished: yearpublished,
+		})
 	}
 
-	return hotItems, nil
+	return HotItems{Items: hotItems}, nil
 }

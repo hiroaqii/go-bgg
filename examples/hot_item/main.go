@@ -1,8 +1,8 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
-	"strconv"
 
 	"github.com/hiroaqii/bgggo"
 )
@@ -14,11 +14,7 @@ func main() {
 		return
 	}
 
-	for _, item := range hotItems.Items.Item {
-		rank, _ := strconv.Atoi(item.Rank)
-		fmt.Printf("%02d,%s(%s)\n", rank, item.Name.Value, item.Yearpublished.Value)
-	}
-	for _, item := range hotItems.Items.Item {
-		fmt.Println(item)
-	}
+	e, _ := json.Marshal(hotItems)
+	fmt.Println(string(e))
+
 }
