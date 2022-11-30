@@ -1,4 +1,4 @@
-package bgggo
+package bgg
 
 import (
 	"encoding/xml"

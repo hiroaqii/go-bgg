@@ -4,11 +4,11 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/hiroaqii/bgggo"
+	"github.com/hiroaqii/bgggo/bgg"
 )
 
 func main() {
-	hotItems, err := bgggo.Hot()
+	hotItems, err := bgg.Hot()
 	if err != nil {
 		println(err)
 		return

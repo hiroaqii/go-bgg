@@ -1,4 +1,4 @@
-package bgggo
+package bgg
 
 import (
 	"encoding/xml"
@@ -213,7 +213,7 @@ func newThingLink(t thingLinkIntermediate) ThingLink {
 }
 
 func Thing() (ThingItems, error) {
-	resp, err := http.Get("https://api.geekdo.com/xmlapi2/thing?id=10000,2")
+	resp, err := http.Get("https://api.geekdo.com/xmlapi2/thing?id=360265")
 	if err != nil {
 		log.Fatal(err)
 	}
