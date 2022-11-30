@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/hiroaqii/bgggo/bgg"
+	"github.com/hiroaqii/go-bgg/bgg"
 )
 
 func main() {
